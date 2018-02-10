@@ -102,11 +102,12 @@ bool checkMoveAvailable(char board[26][26], int n, char row, char col, char clr)
 	int dR, dC;
 	for (dR=-1; dR<=1; dR++) {
 		for (dC=-1; dC<=1; dC++) {
-			if (!(dR == 0 && dC == 0))
+			if (!(dR == 0 && dC == 0)) {
 				if (checkLegalInDirection(board, n, row, col, clr, dR, dC)) {
 						available = true;
 						break;
 				}
+			}
 		}
 		if (available) break;
 	}
@@ -143,13 +144,14 @@ void performMove(char board[26][26], char *ptrBoard, int n, char row, char col, 
 	int dR, dC;
 	for (dR=-1; dR<=1; dR++) {
 		for (dC=-1; dC<=1; dC++) {
-			if (!(dR == 0 && dC == 0))
+			if (!(dR == 0 && dC == 0)) {
 				if (checkLegalInDirection(board, n, row, col, clr, dR, dC)) {
 					for (int k=0, m=0; true; k+=dR, m+=dC) {
 						if (*(ptrBoard + mC*(i+k) + (j+m)) != clr) *(ptrBoard + mC*(i+k) + (j+m)) = clr;
 						else break;
 					}
 				}
+			}
 		}
 	}	
 }
