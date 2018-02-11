@@ -199,6 +199,9 @@ bool checkLegalInDirection(char board[26][26], int n, char row, char col, char c
 		if (board[i][j] == colour) {
 			foundColour = true;
 			break;
+		} else if (board[i][j] == 'U') {
+			foundColour = false;
+			break;
 		}
 	}
 	return foundColour;
