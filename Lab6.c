@@ -129,7 +129,7 @@ bool checkLegalInDirection(char board[26][26], int n, char row, char col, char c
 	int i, j;
 	if (board[row+deltaRow][col+deltaCol] != antiColour) return false;
 	bool foundColour = false;
-	for (i=row+deltaRow, j=col+deltaCol; (i+deltaRow<n && i+deltaRow>=0) && (j+deltaCol<n && j+deltaCol>=0); i+=deltaRow, j+=deltaCol) {
+	for (i=row+deltaRow, j=col+deltaCol; ((i+deltaRow<n+1) && (i+deltaRow>=-1)) && ((j+deltaCol)<n+1 && (j+deltaCol>=-1)); i+=deltaRow, j+=deltaCol) {
 		if (board[i][j] == colour) {
 			foundColour = true;
 			break;
@@ -141,12 +141,14 @@ bool checkLegalInDirection(char board[26][26], int n, char row, char col, char c
 void performMove(char board[26][26], char *ptrBoard, int n, char row, char col, char clr) {
 	int i = row - 'a';
 	int j = col - 'a';
+	int k,m;
 	int dR, dC;
+	*(ptrBoard + mC*i + j) = clr;
 	for (dR=-1; dR<=1; dR++) {
 		for (dC=-1; dC<=1; dC++) {
 			if (!(dR == 0 && dC == 0)) {
 				if (checkLegalInDirection(board, n, row, col, clr, dR, dC)) {
-					for (int k=0, m=0; true; k+=dR, m+=dC) {
+					for (k=dR, m=dC; true; k+=dR, m+=dC) {
 						if (*(ptrBoard + mC*(i+k) + (j+m)) != clr) *(ptrBoard + mC*(i+k) + (j+m)) = clr;
 						else break;
 					}
