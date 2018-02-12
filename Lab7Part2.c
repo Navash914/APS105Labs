@@ -20,10 +20,13 @@ bool anyMoveAvailable(char[26][26], int, char);
 void createCopyBoard(char*, char*, int);
 int findTotalScore(char[26][26], char*, int, char, char, char, int, int, bool);
 int weakBias(int);
-int strongBias(int);
+int strongBias(char[26][26], int);
 bool pointInCorner(int, int, int);
 bool pointInEdge(int, int, int);
 bool pointInRisk(int, int ,int);
+int mobilityScore(char[26][26], int, char, char, char);
+int remainingTiles(char[26][26], int);
+bool riskCornerTaken(char[26][26], int, int, int ,char);
 
 int main(int argc, char **argv)
 {
@@ -59,11 +62,11 @@ void printBoard(char board[26][26], int n) {
 	for (int row=-1; row<n; row++) {
 		if (row == -1) {
 			printf("  ");
-			for (int i=0; i<n; i++) printf("%c", i+'a');
+			for (int i=0; i<n; i++) printf("%c ", i+'a');
 			printf("\n");
 		} else {
 			printf("%c ", row+'a');
-			for (int i=0; i<n; i++) printf("%c", board[row][i]);
+			for (int i=0; i<n; i++) printf("%c ", board[row][i]);
 			printf("\n");
 		}
 	}
@@ -71,7 +74,7 @@ void printBoard(char board[26][26], int n) {
 
 void playCpuTurn(char board[26][26], int n, char clr, bool passed) {
 	char cpyBoard[26][26];
-	int score = 0, maxScore = 0;
+	int score = 0, maxScore = -300;
 	char antiClr = (clr == 'B')? 'W' : 'B';
 	char *ptrBoard = &board[0][0];
 	char *ptrCpyBoard = &cpyBoard[0][0];
@@ -141,15 +144,18 @@ int findTotalScore(char board[26][26], char *ptrBoard, int n, char row, char col
 	if (moveNum == 0) {
 		score = performDummyMove(board, n, row, col, clr);
 		int i = row-'a', j = col-'a';
-		if (pointInCorner(n, i, j)) score += strongBias(n);
+		if (pointInCorner(n, i, j)) score += strongBias(board, n);
 		if (pointInEdge(n, i, j)) score += weakBias(n);
 		if (pointInRisk(n, i, j)) score -= weakBias(n);
 		return findTotalScore(board, ptrBoard, n, row, col, antiClr, score, ++moveNum, !cpuTurn);
 	} else {
-		if (moveNum > THINK_AHEAD) return score;
-		int tempScore, maxScore=0;
+		int tilesRemain = remainingTiles(board, n);
+		int thinkAhead = (tilesRemain < THINK_AHEAD)? tilesRemain : THINK_AHEAD;
+		if (moveNum > thinkAhead) return score;
+		int tempScore, maxScore=-300;
 		int i,j;
 		char moveRow, moveCol;
+		int moveScore=0;
 	
 		if (anyMoveAvailable(board, n, clr)) {
 			for (i=0; i<n; i++) {
@@ -158,9 +164,14 @@ int findTotalScore(char board[26][26], char *ptrBoard, int n, char row, char col
 					col = j + 'a';
 					if (checkMoveAvailable(board, n, row, col, clr)) {
 						tempScore = performDummyMove(board, n, row, col, clr);
-						if (pointInCorner(n, i, j)) tempScore += strongBias(n);
+						if (pointInCorner(n, i, j)) tempScore += strongBias(board, n);
 						if (pointInEdge(n, i, j)) tempScore += weakBias(n);
-						if (pointInRisk(n, i, j)) tempScore -= weakBias(n);
+						if (pointInRisk(n, i, j)) {
+							if (!riskCornerTaken(board, n, i, j, clr)) tempScore -= weakBias(n);
+						}
+						moveScore = mobilityScore(board, n, row, col, clr);
+						if (moveScore <= 0) tempScore += strongBias(board, n);
+						else tempScore -= moveScore;
 						if (tempScore > maxScore) {
 							maxScore = tempScore;
 							moveRow = i;
@@ -174,13 +185,15 @@ int findTotalScore(char board[26][26], char *ptrBoard, int n, char row, char col
 			else score -= maxScore;
 			return findTotalScore(board, ptrBoard, n, row, col, antiClr, score, ++moveNum, !cpuTurn);
 		} else {
+			if (cpuTurn) score -= strongBias(board, n);
+			else score += strongBias(board, n);
 			return findTotalScore(board, ptrBoard, n, row, col, antiClr, score, ++moveNum, cpuTurn);
 		}
 	}
 }
 
 int performDummyMove(char board[26][26], int n, char row, char col, char clr) {
-	int count = 0;
+	int count = 1;
 	int i = row - 'a';
 	int j = col - 'a';
 	int k,m;
@@ -346,11 +359,15 @@ void forceEndGame(char clr) {
 }
 
 int weakBias(int n) {
-	return n/4;
+	return n/2;
 }
 
-int strongBias(int n) {
-	return n/2;
+int strongBias(char board[26][26], int n) {
+	int tilesRemain = remainingTiles(board, n);
+	tilesRemain *= 100;
+	tilesRemain /= n*n;
+	n *= (tilesRemain > 75)? 2 : 1;
+	return n;
 }
 
 bool pointInCorner(int n, int row, int col) {
@@ -374,5 +391,77 @@ bool pointInRisk(int n, int row, int col) {
 	if (row == 1 && (col < 2 || col > n-3)) return true;
 	if (row == n-2 && (col < 2 || col > n-3)) return true;
 	if (row == n-1 && (col == 1 || col == n-2)) return true;
+	return false;
+}
+
+int mobilityScore(char board[26][26], int n, char row, char col, char clr) {
+	char antiClr = (clr == 'B')? 'W' : 'B';
+	char copyBoard[26][26];
+	char *ptBoard = &board[0][0];
+	char *ptrCopyBoard = &copyBoard[0][0];
+	createCopyBoard(ptrCopyBoard, ptBoard, n);
+	performMove(copyBoard, ptrCopyBoard, n, row, col, clr);
+	int i, j;
+	char r, c;
+	int count=0;
+	for (i=0; i<n; i++) {
+		for (j=0; j<n; j++) {
+			r = i+'a';
+			c = j+'a';
+			if (checkMoveAvailable(copyBoard, n, r, c, antiClr)) {
+				if (pointInCorner(n, i, j)) count += strongBias(copyBoard, n);
+				else if (pointInEdge(n, i, j)) count += weakBias(n);
+				else if (pointInRisk(n, i, j)) count -= weakBias(n);
+				else count++;
+			}
+		}
+	}
+	return count;
+}
+
+int remainingTiles(char board[26][26], int n) {
+	int i, j;
+	int count = 0;
+	for (i=0; i<n; i++) {
+		for (j=0; j<n; j++) {
+			if (board[i][j] == 'U') count++;
+		}
+	}
+	return count;
+}
+
+bool riskCornerTaken(char board[26][26], int n, int row, int col, char clr) {
+	if (row == 0 && col == 1) { // Top Left Corner
+		if (board[0][0] == clr) return true;
+		else return false;
+	}
+	if (row == 0 && col == n-2) { // Top Right Corner
+		if (board[0][n-1] == clr) return true;
+		else return false;
+	}
+	if (row == 1 && col < 2) { // Top Left Corner
+		if (board[0][0] == clr) return true;
+		else return false;
+	}
+	if (row == 1 && col > n-3) { // Top Right Corner
+		if (board[0][n-1] == clr) return true;
+		else return false;
+	}
+	if (row == n-2 && col < 2) { // Bottom Left Corner
+		if (board[n-1][0] == clr) return true;
+		else return false;
+	}
+	if (row == n-2 && col > n-3) { // Bottom Right Corner
+		if (board[n-1][n-1] == clr) return true;
+		else return false;
+	}
+	if (row == n-1 && col == 1) { // Bottom Left Corner
+		if (board[n-1][0] == clr) return true;
+		else return false;
+	}
+	if (row == n-1 && col == n-2) { // Bottom Right Corner
+		if (board[n-1][n-1] == clr) return true;
+		else return false;
+	}
 	return false;
 }
