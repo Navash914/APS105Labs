@@ -11,6 +11,7 @@ bool checkMoveAvailable(char[26][26], int, char, char, char);
 bool positionInBounds(int, char, char);
 bool checkLegalInDirection(char[26][26], int, char, char, char, int, int);
 void performMove(char[26][26], char*, int, char, char, char);
+char getAntiClr(char);
 
 int main(int argc, char **argv)
 {
@@ -135,7 +136,7 @@ bool positionInBounds(int n, char row, char col) {
 bool checkLegalInDirection(char board[26][26], int n, char row, char col, char colour, int deltaRow, int deltaCol) {
 	row -= 'a';
 	col -= 'a';
-	char antiColour = (colour == 'W')? 'B' : 'W'; // Opposite colour
+	char antiColour = getAntiClr(colour); // Opposite colour
 	int i, j;
 	if (board[row+deltaRow][col+deltaCol] != antiColour) return false; // False if immediate piece is not opposite colour
 	bool foundColour = false;
@@ -172,4 +173,10 @@ void performMove(char board[26][26], char *ptrBoard, int n, char row, char col, 
 			}
 		}
 	}	
+}
+
+// Get opponent's colour:
+char getAntiClr(char clr) {
+	if (clr == 'W') return 'B';
+	else return 'W';
 }
