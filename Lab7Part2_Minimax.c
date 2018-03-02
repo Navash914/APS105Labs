@@ -3,14 +3,6 @@
 #include <stdbool.h>
 #include <windows.h>
 #define mC 26
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
 #define THINK_AHEAD 3
 
 void initializeBoard(char*, int);
@@ -72,7 +64,7 @@ void initializeBoard(char *board, int n) {
 
 void printBoard(char board[26][26], int n) {
 	HANDLE  hConsole;
-    int c;
+    	int c;
 
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	
@@ -101,7 +93,7 @@ void printBoard(char board[26][26], int n) {
 
 void playCpuTurn(char board[26][26], int n, char clr, bool passed) {
 	//char cpyBoard[26][26];
-	char antiClr = (clr == 'B')? 'W' : 'B';
+	char antiClr = getAntiClr(clr);
 	char *ptrBoard = &board[0][0];
 	//char *ptrCpyBoard = &cpyBoard[0][0];
 	//createCopyBoard(ptrCpyBoard, ptrBoard, n);
@@ -281,7 +273,7 @@ int performDummyMove(char board[26][26], int n, char row, char col, char clr) {
 }
 
 void playPlayerTurn(char board[26][26], int n, char clr, bool passed) {
-	char antiClr = (clr == 'B')? 'W' : 'B';
+	char antiClr = getAntiClr(clr);
 	char *ptrBoard = &board[0][0];
 	char moveRow, moveCol;
 	bool movesAvailable = false;
@@ -464,7 +456,7 @@ bool pointInRisk(int n, int row, int col) {
 }
 
 int mobilityScore(char board[26][26], int n, char row, char col, char clr) {
-	char antiClr = (clr == 'B')? 'W' : 'B';
+	char antiClr = getAntiClr(clr);
 	char copyBoard[26][26];
 	char *ptBoard = &board[0][0];
 	char *ptrCopyBoard = &copyBoard[0][0];
