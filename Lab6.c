@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#define mC 26
 
-void initializeBoard(char*, int);
+void initializeBoard(char[26][26], int);
 void printBoard(char[26][26], int);
-void setUpBoard(char*, int);
+void setUpBoard(char[26][26], int);
 void printAvailableMoves(char[26][26], int, char);
 bool checkMoveAvailable(char[26][26], int, char, char, char);
 bool positionInBounds(int, char, char);
 bool checkLegalInDirection(char[26][26], int, char, char, char, int, int);
-void performMove(char[26][26], char*, int, char, char, char);
+void performMove(char[26][26], int, char, char, char);
 char getAntiClr(char);
 
 int main(int argc, char **argv)
@@ -20,9 +19,9 @@ int main(int argc, char **argv)
 	printf("Enter the board dimension: ");
 	scanf("%d", &n); // Dimensions for board.
 	char board[26][26];
-	char *ptrBoard = &board[0][0];
-	initializeBoard(ptrBoard, n); // Set W and B pieces in center
-	setUpBoard(ptrBoard, n); // Configuration phase
+	initializeBoard(board, n); // Set W and B pieces in center
+	printBoard(board, n);
+	setUpBoard(board, n); // Configuration phase
 	printBoard(board, n); // Print board after configuration
 	printAvailableMoves(board, n, 'W'); // Available moves for W
 	printAvailableMoves(board, n, 'B'); // Available moves for B
@@ -31,7 +30,7 @@ int main(int argc, char **argv)
 	if (checkMoveAvailable(board, n, moveRow, moveCol, moveClr)) { // Check for validity
 		// Valid Move:
 		printf("Valid move.\n");
-		performMove(board, ptrBoard, n, moveRow, moveCol, moveClr);
+		performMove(board, n, moveRow, moveCol, moveClr);
 	} else {
 		// Invalid Move:
 		printf("Invalid move.\n");
@@ -41,14 +40,14 @@ int main(int argc, char **argv)
 }
 
 // Function for preparing board with Ws and Bs in center and Us everywhere else
-void initializeBoard(char *board, int n) {
+void initializeBoard(char board[26][26], int n) {
 	for (int i=0; i<n; i++) {
 		for (int j=0; j<n; j++) {
 			if ((i == (n/2) - 1 || i == n/2) && (j == n/2 || j == (n/2) - 1)) // Center Area
-				if (i == j) *(board+ mC*i + j) = 'W';
-				else *(board + mC*i + j) = 'B';
+				if (i == j) board[i][j] = 'W';
+				else board[i][j] = 'B';
 			else // Everywhere Else
-				*(board+ mC*i + j) = 'U';
+				board[i][j] = 'U';
 		}
 	}
 }
@@ -69,17 +68,18 @@ void printBoard(char board[26][26], int n) {
 }
 
 // Function for configuration of board
-void setUpBoard(char *board, int n) {
+void setUpBoard(char board[26][26], int n) {
 	bool done = false;
 	char clr, row, col;
+	int i,j;
 	printf("Enter board configuration:\n");
 	while (!done) {
 		scanf(" %c%c%c", &clr, &row, &col);
 		if (clr == '!' && row == '!' && col == '!') done = true; // End if !!!
 		else {
-			row -= 'a';
-			col -= 'a';
-			*(board + mC*row + col) = clr; // Set board piece
+			i = row - 'a';
+			j = col - 'a';
+			board[i][j] = clr; // Set board piece
 		}
 	}
 }
@@ -154,19 +154,19 @@ bool checkLegalInDirection(char board[26][26], int n, char row, char col, char c
 }
 
 // Function for performing a given move. The move in this function is already valid.
-void performMove(char board[26][26], char *ptrBoard, int n, char row, char col, char clr) {
+void performMove(char board[26][26], int n, char row, char col, char clr) {
 	int i = row - 'a';
 	int j = col - 'a';
 	int k,m;
 	int dR, dC;
-	*(ptrBoard + mC*i + j) = clr;
+	board[i][j] = clr;
 	for (dR=-1; dR<=1; dR++) {
 		for (dC=-1; dC<=1; dC++) { // For all directions.
 			if (!(dR == 0 && dC == 0)) { // Skip for direction 0,0
 				if (checkLegalInDirection(board, n, row, col, clr, dR, dC)) {
 					// Pieces can be flipped in this direction.
 					for (k=dR, m=dC; true; k+=dR, m+=dC) { // Keep flipping pieces
-						if (*(ptrBoard + mC*(i+k) + (j+m)) != clr) *(ptrBoard + mC*(i+k) + (j+m)) = clr;
+						if (board[i+k][j+m] != clr) board[i+k][j+m] = clr;
 						else break; // End when clr is found
 					}
 				}
