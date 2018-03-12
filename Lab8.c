@@ -4,8 +4,8 @@
 // This is a program written to maintain a personal music library, 
 // using a linked list to hold the songs in the library.
 //
-// Author: <Your Name Goes Here>
-// Student Number: <Your Student Number Goes Here>
+// Author: Naveed Ashfaq
+// Student Number: 1003859559
 //
 
 #include <stdio.h>
@@ -33,8 +33,8 @@ typedef struct node {
 // DECLARE YOUR LINKED-LIST FUNCTIONS HERE
 //
 
-void insertSong(Node *head, char song[], char artistName[], char genreName[], Node **headPtr);
-void deleteSong(Node *head, Node **headPtr, char song[]);
+Node* insertSong(Node *head, char song[], char artistName[], char genreName[]);
+Node* deleteSong(Node *head, char song[]);
 bool libraryEmpty(Node *head);
 void printMusicLibraryEntries(Node *head);
 void printSong(Node *currentNode);
@@ -96,7 +96,7 @@ int main( void ) {
 			inputStringFromUser(promptArtist, inputArtist, MAX_LENGTH);
 			inputStringFromUser(promptGenre, inputGenre, MAX_LENGTH);
 			// Insert the song:
-			insertSong(head, inputSong, inputArtist, inputGenre, &head);
+			head = insertSong(head, inputSong, inputArtist, inputGenre);
         }
         else if( response == 'D' ) {
             // Delete a song from the list.
@@ -105,7 +105,7 @@ int main( void ) {
             char *prompt = "\nEnter the name of the song to be deleted" ;
 			inputStringFromUser(prompt, input, MAX_LENGTH);
 			// Delete Song:
-			deleteSong(head, &head, input);
+			head = deleteSong(head, input);
 
         }
         else if( response == 'S' ) {
@@ -200,7 +200,7 @@ void printMusicLibraryTitle(void) {
 //   ADD STATEMENT(S) HERE
 
 // Function for inserting a new song into the library. Song is inserted alphabetically.
-void insertSong(Node *head, char song[], char artistName[], char genreName[], Node **headPtr) {
+Node* insertSong(Node *head, char song[], char artistName[], char genreName[]) {
 	Node *currentNode = head;
 	
 	if (head == NULL) { // Check to see if the head has a value.
@@ -214,40 +214,47 @@ void insertSong(Node *head, char song[], char artistName[], char genreName[], No
 		strcpy(head->artist, artistName);
 		strcpy(head->genre, genreName);
 		head->nextNode = NULL;
-		// Change pointer in main:
-		*headPtr = head;
-		return;
+		// Return changed head pointer to pointer in main:
+		return head;
 	}
 	
-	if (searchSongName(head, song)) return songNameDuplicate(song);
+	if (searchSongName(head, song)) { // Check for duplicate.
+		// Duplicate song name.
+		songNameDuplicate(song);
+		return head;
+	}
 	
+	// Check if song should be new head:
 	if (strcmp(song, head->songName) < 0) {
+		// Make new head.
 		Node* newHead = (Node*) malloc(sizeof(Node));
 		newHead->songName = (char*) malloc(sizeof(char)*strlen(song));
 		newHead->artist = (char*) malloc(sizeof(char)*strlen(artistName));
 		newHead->genre = (char*) malloc(sizeof(char)*strlen(genreName));
-		//newHead->nextNode = (Node*) malloc(sizeof(Node));
 		strcpy(newHead->songName, song);
 		strcpy(newHead->artist, artistName);
 		strcpy(newHead->genre, genreName);
-		newHead->nextNode = *headPtr;
-		*headPtr = newHead;
-		return;
+		newHead->nextNode = head; // Point nextNode to old head.
+		return newHead; // Return new head to 'head' pointer in main.
 	}
 	
+	// Go to required node:
 	while (currentNode->nextNode != NULL && strcmp(song, currentNode->nextNode->songName) > 0) currentNode = currentNode->nextNode;
 	
+	// Create new node to insert song:
 	Node *newNode = (Node*) malloc(sizeof(Node));
-	newNode->songName = (char*) malloc(sizeof(char)*(strlen(song)));
-	newNode->artist = (char*) malloc(sizeof(char)*(strlen(artistName)));
-	newNode->genre = (char*) malloc(sizeof(char)*(strlen(genreName)));
-	//newNode->nextNode = (Node*) malloc(sizeof(Node));
-	newNode->nextNode = currentNode->nextNode;
-	currentNode->nextNode = newNode;
+	newNode->songName = (char*) malloc(sizeof(char)*strlen(song));
+	newNode->artist = (char*) malloc(sizeof(char)*strlen(artistName));
+	newNode->genre = (char*) malloc(sizeof(char)*strlen(genreName));
+	newNode->nextNode = currentNode->nextNode; // Connect new node to next node of current node.
+	currentNode->nextNode = newNode; // Connect next node of current node to new node.
 	
+	// Assign values to new node:
 	strcpy(newNode->songName, song);
 	strcpy(newNode->artist, artistName);
 	strcpy(newNode->genre, genreName);
+	
+	return head; // Return unchanged head.
 	
 	/*currentNode->nextNode = (Node*) malloc(sizeof(Node));
 	currentNode->nextNode->songName = (char*) malloc(sizeof(char)*(strlen(song)));
@@ -260,60 +267,72 @@ void insertSong(Node *head, char song[], char artistName[], char genreName[], No
 	currentNode->nextNode->nextNode = NULL;*/
 }
 
-void deleteSong(Node *head, Node **headPtr, char song[]) {
-	if (!searchSongName(head, song)) return songNameNotFound(song);
+// Function for deleting song from the library given a specified song name:
+Node* deleteSong(Node *head, char song[]) {
+	if (!searchSongName(head, song)) { // Search if song exists in library.
+		// Song not found.
+		songNameNotFound(song);
+		return head; // Return unchanged head.
+	}
 	Node *currentNode = head;
 	
+	// Check if song to delete is head and assign new head:
 	if (strcmp(head->songName, song) == 0) {
-		Node *tempNode = head->nextNode;
+		Node *newHead = head->nextNode; // New head should be next node.
+		// Free current head:
 		free(head->songName);
 		free(head->artist);
 		free(head->genre);
-		//free(head->nextNode);
 		free(head);
-		*headPtr = tempNode;
-		songNameDeleted(song);
-		return;
+		songNameDeleted(song); // Confirmation of deletion.
+		return newHead; // Return new head to 'head' pointer in main.
 	}
 	
+	// Find node with song.
 	while (strcmp(currentNode->nextNode->songName, song) != 0) currentNode = currentNode->nextNode;
 	
-	// Now currentNode->nextNode is the song to delete;
+	// Now currentNode->nextNode is the song to delete.
 	
-	Node *tempNode = currentNode->nextNode;
+	Node *tempNode = currentNode->nextNode; // Store nextNode of node to delete.
+	// Free node;
 	free(currentNode->nextNode->songName);
 	free(currentNode->nextNode->artist);
 	free(currentNode->nextNode->genre);
-	//free(currentNode->nextNode->nextNode);
 	free(currentNode->nextNode);
-	currentNode->nextNode = tempNode->nextNode;
+	currentNode->nextNode = tempNode->nextNode; // Connect stored node to currentNode.
 	
-	songNameDeleted(song);
+	songNameDeleted(song); // Confirm deletion.
+	return head; // Return unchanged head.
 }
 
+// Function to check if library is empty.
 bool libraryEmpty(Node *head) {
 	if (head == NULL) return true;
 	return false;
 }
 
+// Function to print out music library.
 void printMusicLibraryEntries(Node *head) {
 	Node *currentNode = head;
-	if (libraryEmpty(head)) printMusicLibraryEmpty();
+	if (libraryEmpty(head)) printMusicLibraryEmpty(); // Print empty message if empty.
 	else {
-		printMusicLibraryTitle();
-		while (currentNode != NULL) {
+		// Library is not empty.
+		printMusicLibraryTitle(); // Print title.
+		while (currentNode != NULL) { // Iterate till end of links.
 			printSong(currentNode);
 			currentNode = currentNode->nextNode;
 		}
 	}
 }
 
+// Function to print song along with artist and genre.
 void printSong(Node *currentNode) {
 	printf("\n%s\n", currentNode->songName);
 	printf("%s\n", currentNode->artist);
 	printf("%s\n", currentNode->genre);
 }
 
+// Function to check whether a given song name exists in library.
 bool searchSongName(Node *head, char song[]) {
 	Node *currentNode = head;
 	while (currentNode != NULL) {
@@ -323,6 +342,7 @@ bool searchSongName(Node *head, char song[]) {
 	return false;
 }
 
+// Function to get the node for a given song name.
 Node* getSongNode(Node *head, char song[]) {
 	Node *currentNode = head;
 	while (currentNode != NULL) {
@@ -332,22 +352,20 @@ Node* getSongNode(Node *head, char song[]) {
 	return head;
 }
 
+// Function to delete entire library.
 Node* deleteAllEntries(Node *head) {
-	//Node *currentNode = head;
-	//head = NULL;
-	Node *tempNode = NULL;
+	Node *tempNode = NULL; // Create temporary node.
 	
 	while (head != NULL) {
-		tempNode = head->nextNode;
-		songNameDeleted(head->songName);
-		//head = NULL;
+		tempNode = head->nextNode; // Store next node.
+		songNameDeleted(head->songName); // Confirm deletion.
+		// Free node:
 		free(head->songName);
 		free(head->artist);
 		free(head->genre);
 		free(head);
-		head = tempNode;
+		head = tempNode; // Assign stored node for next loop.
 	}
 	
-	return head;
-	//printMusicLibraryEntries(head);
+	return head; // Return new head (should be null) to 'head' pointer in main.
 }
