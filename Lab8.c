@@ -22,9 +22,9 @@ const int MAX_LENGTH = 1024;
 // and deallocated using the free() function after use.
 
 typedef struct node {
-    char artist[1025] ;
-    char songName[1025] ;
-    char genre[1025] ;
+    char *artist ;
+    char *songName ;
+    char *genre ;
     struct node *nextNode ;
 } Node;
 
@@ -40,6 +40,7 @@ void printMusicLibraryEntries(Node *head);
 void printSong(Node *currentNode);
 bool searchSongName(Node *head, char song[]);
 Node* getSongNode(Node *head, char song[]);
+Node* deleteAllEntries(Node *head);
 
 // Declarations of support functions
 // See below the main function for descriptions of what these functions do
@@ -70,9 +71,9 @@ int main( void ) {
     
     char response ;
     char input[ MAX_LENGTH + 1 ] ;
-			char inputSong[MAX_LENGTH + 1];
-			char inputArtist[MAX_LENGTH + 1];
-			char inputGenre[MAX_LENGTH + 1];
+	char inputSong[MAX_LENGTH + 1]; //For accepting song input.
+	char inputArtist[MAX_LENGTH + 1]; //For accepting artist input.
+	char inputGenre[MAX_LENGTH + 1]; //For accepting genre input.
     do {
         inputStringFromUser( "\nCommand", input, MAX_LENGTH ) ;
 
@@ -89,19 +90,22 @@ int main( void ) {
 			char *promptName = "Song name" ;
 			char *promptArtist =  "Artist" ;
 			char *promptGenre = "Genre" ;
-
+			
+			// Get user input:
 			inputStringFromUser(promptName, inputSong, MAX_LENGTH);
 			inputStringFromUser(promptArtist, inputArtist, MAX_LENGTH);
 			inputStringFromUser(promptGenre, inputGenre, MAX_LENGTH);
+			// Insert the song:
 			insertSong(head, inputSong, inputArtist, inputGenre, &head);
         }
         else if( response == 'D' ) {
             // Delete a song from the list.
+			//   ADD STATEMENT(S) HERE
 
             char *prompt = "\nEnter the name of the song to be deleted" ;
 			inputStringFromUser(prompt, input, MAX_LENGTH);
+			// Delete Song:
 			deleteSong(head, &head, input);
-            //   ADD STATEMENT(S) HERE
 
         }
         else if( response == 'S' ) {
@@ -111,20 +115,17 @@ int main( void ) {
             //   ADD STATEMENT(S) HERE
 			inputStringFromUser(prompt, input, MAX_LENGTH);
 			if (searchSongName(head, input)) {
+				// Song name is found.
 				songNameFound(input);
 				printSong(getSongNode(head, input));
 			}
-			else songNameNotFound(input);
+			else songNameNotFound(input); // Song name not found.
         }
         else if( response == 'P' ) {
             // Print the music library.
 
             //   ADD STATEMENT(S) HERE
-			if (libraryEmpty(head)) printMusicLibraryEmpty();
-			else {
-				printMusicLibraryTitle();
-				printMusicLibraryEntries(head);
-			}
+			printMusicLibraryEntries(head);
         }
         else if( response == 'Q' ) {
             // do nothing, we'll catch this below
@@ -137,10 +138,11 @@ int main( void ) {
   
     // Delete the entire linked list.
     //   ADD STATEMENT(S) HERE
+	head = deleteAllEntries(head);
 
     // Print the linked list to confirm deletion.
     //   ADD STATEMENT(S) HERE
-
+	printMusicLibraryEntries(head);
     return 0 ;
 }
 
@@ -196,25 +198,66 @@ void printMusicLibraryTitle(void) {
 // Add your functions below this line.
 
 //   ADD STATEMENT(S) HERE
+
+// Function for inserting a new song into the library. Song is inserted alphabetically.
 void insertSong(Node *head, char song[], char artistName[], char genreName[], Node **headPtr) {
 	Node *currentNode = head;
 	
-	if (head == NULL) {
+	if (head == NULL) { // Check to see if the head has a value.
+		// Allocate Memory:
 		head = (Node*) malloc(sizeof(Node));
+		head->songName = (char*) malloc(sizeof(char)*(strlen(song)));
+		head->artist = (char*) malloc(sizeof(char)*(strlen(artistName)));
+		head->genre = (char*) malloc(sizeof(char)*(strlen(genreName)));
+		// Insert strings:
 		strcpy(head->songName, song);
 		strcpy(head->artist, artistName);
 		strcpy(head->genre, genreName);
 		head->nextNode = NULL;
+		// Change pointer in main:
 		*headPtr = head;
 		return;
 	}
 	
-	while (currentNode->nextNode != NULL) currentNode = currentNode->nextNode;
-	currentNode->nextNode = (Node*) malloc(sizeof(Node));
+	if (searchSongName(head, song)) return songNameDuplicate(song);
+	
+	if (strcmp(song, head->songName) < 0) {
+		Node* newHead = (Node*) malloc(sizeof(Node));
+		newHead->songName = (char*) malloc(sizeof(char)*strlen(song));
+		newHead->artist = (char*) malloc(sizeof(char)*strlen(artistName));
+		newHead->genre = (char*) malloc(sizeof(char)*strlen(genreName));
+		//newHead->nextNode = (Node*) malloc(sizeof(Node));
+		strcpy(newHead->songName, song);
+		strcpy(newHead->artist, artistName);
+		strcpy(newHead->genre, genreName);
+		newHead->nextNode = *headPtr;
+		*headPtr = newHead;
+		return;
+	}
+	
+	while (currentNode->nextNode != NULL && strcmp(song, currentNode->nextNode->songName) > 0) currentNode = currentNode->nextNode;
+	
+	Node *newNode = (Node*) malloc(sizeof(Node));
+	newNode->songName = (char*) malloc(sizeof(char)*(strlen(song)));
+	newNode->artist = (char*) malloc(sizeof(char)*(strlen(artistName)));
+	newNode->genre = (char*) malloc(sizeof(char)*(strlen(genreName)));
+	//newNode->nextNode = (Node*) malloc(sizeof(Node));
+	newNode->nextNode = currentNode->nextNode;
+	currentNode->nextNode = newNode;
+	
+	strcpy(newNode->songName, song);
+	strcpy(newNode->artist, artistName);
+	strcpy(newNode->genre, genreName);
+	
+	/*currentNode->nextNode = (Node*) malloc(sizeof(Node));
+	currentNode->nextNode->songName = (char*) malloc(sizeof(char)*(strlen(song)));
+	currentNode->nextNode->artist = (char*) malloc(sizeof(char)*(strlen(artistName)));
+	currentNode->nextNode->genre = (char*) malloc(sizeof(char)*(strlen(genreName)));
+	currentNode->nextNode->nextNode = (Node*) malloc(sizeof(Node));
 	strcpy(currentNode->nextNode->songName, song);
 	strcpy(currentNode->nextNode->artist, artistName);
 	strcpy(currentNode->nextNode->genre, genreName);
-	currentNode->nextNode->nextNode = NULL;
+	currentNode->nextNode->nextNode = NULL;*/
 }
 
 void deleteSong(Node *head, Node **headPtr, char song[]) {
@@ -226,7 +269,7 @@ void deleteSong(Node *head, Node **headPtr, char song[]) {
 		free(head->songName);
 		free(head->artist);
 		free(head->genre);
-		free(head->nextNode);
+		//free(head->nextNode);
 		free(head);
 		*headPtr = tempNode;
 		songNameDeleted(song);
@@ -241,7 +284,7 @@ void deleteSong(Node *head, Node **headPtr, char song[]) {
 	free(currentNode->nextNode->songName);
 	free(currentNode->nextNode->artist);
 	free(currentNode->nextNode->genre);
-	free(currentNode->nextNode->nextNode);
+	//free(currentNode->nextNode->nextNode);
 	free(currentNode->nextNode);
 	currentNode->nextNode = tempNode->nextNode;
 	
@@ -255,10 +298,13 @@ bool libraryEmpty(Node *head) {
 
 void printMusicLibraryEntries(Node *head) {
 	Node *currentNode = head;
-	
-	while (currentNode != NULL) {
-		printSong(currentNode);
-		currentNode = currentNode->nextNode;
+	if (libraryEmpty(head)) printMusicLibraryEmpty();
+	else {
+		printMusicLibraryTitle();
+		while (currentNode != NULL) {
+			printSong(currentNode);
+			currentNode = currentNode->nextNode;
+		}
 	}
 }
 
@@ -283,4 +329,25 @@ Node* getSongNode(Node *head, char song[]) {
 		if (strcmp(currentNode->songName, song) == 0) return currentNode;
 		currentNode = currentNode->nextNode;
 	}
+	return head;
+}
+
+Node* deleteAllEntries(Node *head) {
+	//Node *currentNode = head;
+	//head = NULL;
+	Node *tempNode = NULL;
+	
+	while (head != NULL) {
+		tempNode = head->nextNode;
+		songNameDeleted(head->songName);
+		//head = NULL;
+		free(head->songName);
+		free(head->artist);
+		free(head->genre);
+		free(head);
+		head = tempNode;
+	}
+	
+	return head;
+	//printMusicLibraryEntries(head);
 }
