@@ -2,25 +2,23 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <windows.h>
-#define mC 26
-#define THINK_AHEAD 3
 
-void initializeBoard(char*, int);
+void initializeBoard(char[26][26], int);
 void printBoard(char[26][26], int);
 void playCpuTurn(char[26][26], int, char, bool);
 void playPlayerTurn(char[26][26], int, char, bool);
 bool checkMoveAvailable(char[26][26], int, char, char, char);
 bool positionInBounds(int, char, char);
 bool checkLegalInDirection(char[26][26], int, char, char, char, int, int);
-void performMove(char[26][26], char*, int, char, char, char);
+void performMove(char[26][26], int, char, char, char);
 int performDummyMove(char[26][26], int, char, char, char);
 bool checkEndGame(char[26][26], int);
 void endGame(char[26][26], int);
 void forceEndGame(char);
 bool anyMoveAvailable(char[26][26], int, char);
-void createCopyBoard(char*, char*, int);
-void findBestMove(char[26][26], char*, int, char, char*, char*);
-int findTotalScore(char[26][26], char*, int, char, char, char);
+void createCopyBoard(char[26][26], char[26][26], int);
+void findBestMove(char[26][26], int, char, char*, char*);
+int findTotalScore(char[26][26], int, char, char, char);
 int weakBias(int);
 int strongBias(char[26][26], int);
 bool pointInCorner(int, int, int);
@@ -32,6 +30,7 @@ bool riskCornerTaken(char[26][26], int, int, int ,char);
 char getAntiClr(char);
 bool bothPlayersMovesAvailable(char[26][26], int);
 
+
 int main(int argc, char **argv)
 {
 	int n;
@@ -39,8 +38,7 @@ int main(int argc, char **argv)
 	printf("Enter the board dimension: ");
 	scanf("%d", &n);
 	char board[26][26];
-	char *ptrBoard = &board[0][0];
-	initializeBoard(ptrBoard, n);
+	initializeBoard(board, n);
 	printf("Computer plays (B/W) : ");
 	scanf(" %c", &cpuClr);
 	playerClr = (cpuClr == 'B')? 'W' : 'B';
@@ -50,21 +48,21 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void initializeBoard(char *board, int n) {
+void initializeBoard(char board[26][26], int n) {
 	for (int i=0; i<n; i++) {
 		for (int j=0; j<n; j++) {
 			if ((i == (n/2) - 1 || i == n/2) && (j == n/2 || j == (n/2) - 1))
-				if (i == j) *(board+ mC*i + j) = 'W';
-				else *(board + mC*i + j) = 'B';
+				if (i == j) board[i][j] = 'W';
+				else board[i][j] = 'B';
 			else
-				*(board+ mC*i + j) = 'U';
+				board[i][j] = 'U';
 		}
 	}
 }
 
 void printBoard(char board[26][26], int n) {
 	HANDLE  hConsole;
-    	int c;
+    int c;
 
 	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	
@@ -92,37 +90,17 @@ void printBoard(char board[26][26], int n) {
 }
 
 void playCpuTurn(char board[26][26], int n, char clr, bool passed) {
-	//char cpyBoard[26][26];
 	char antiClr = getAntiClr(clr);
-	char *ptrBoard = &board[0][0];
-	//char *ptrCpyBoard = &cpyBoard[0][0];
-	//createCopyBoard(ptrCpyBoard, ptrBoard, n);
 	bool movesAvailable = anyMoveAvailable(board, n, clr);
 	
 	if (movesAvailable) {
-		//int i,j;
-		//char row, col;
-		//for (i=0; i<n; i++) {
-		//	for (j=0; j<n; j++) {
-		//		row = i + 'a';
-		//		col = j + 'a';
-		//		if (checkMoveAvailable(board, n, row, col, clr)) {
-		//			score = findTotalScore(cpyBoard, ptrCpyBoard, n, row, col, clr, 0, 0, true);
-		//			if (score > maxScore) {
-		//				maxScore = score;
-		//				moveRow = row;
-		//				moveCol = col;
-		//			}
-		//		}
-		//	}
-		//}
 		char moveRow, moveCol;
 		char *ptrRow, *ptrCol;
 		ptrRow = &moveRow;
 		ptrCol = &moveCol;
-		findBestMove(board, ptrBoard, n, clr, ptrRow, ptrCol);
+		findBestMove(board, n, clr, ptrRow, ptrCol);
 		printf("Computer places %c at %c%c.\n", clr, moveRow, moveCol);
-		performMove(board, ptrBoard, n, moveRow, moveCol, clr);
+		performMove(board, n, moveRow, moveCol, clr);
 		printBoard(board, n);
 		return playPlayerTurn(board, n, antiClr, false);
 	} else {
@@ -133,11 +111,11 @@ void playCpuTurn(char board[26][26], int n, char clr, bool passed) {
 	}
 }
 
-void createCopyBoard(char *copy, char *origin, int n) {
+void createCopyBoard(char copy[26][26], char origin[26][26], int n) {
 	int i,j;
 	for (i=0; i<n; i++) {
 		for (j=0; j<n; j++) {
-			*(copy + mC*i + j) = *(origin + mC*i + j);
+			copy[i][j] = origin[i][j];
 		}
 	}
 }
@@ -161,14 +139,14 @@ bool anyMoveAvailable(char board[26][26], int n, char clr) {
 }
 
 
-int findTotalScore(char board[26][26], char *ptrBoard, int n, char row, char col, char clr) {
+int findTotalScore(char board[26][26], int n, char row, char col, char clr) {
 	int score, tempScore, maxScore = -9999;
 	score = performDummyMove(board, n, row, col, clr);
 	int i = row-'a', j = col-'a';
 	if (pointInCorner(n, i, j)) score += strongBias(board, n);
 	if (pointInEdge(n, i, j)) score += weakBias(n);
 	if (pointInRisk(n, i, j)) score -= weakBias(n);
-	performMove(board, ptrBoard, n, row, col, clr);
+	performMove(board, n, row, col, clr);
 	clr = getAntiClr(clr);
 	bool cpuTurn = false;
 	char moveRow, moveCol;
@@ -197,7 +175,7 @@ int findTotalScore(char board[26][26], char *ptrBoard, int n, char row, char col
 					}
 				}
 			}
-			performMove(board, ptrBoard, n, moveRow, moveCol, clr);
+			performMove(board, n, moveRow, moveCol, clr);
 			if (cpuTurn) score += maxScore;
 			else score -= maxScore;
 		} else {
@@ -221,12 +199,8 @@ bool bothPlayersMovesAvailable(char board[26][26], int n) {
 	else return false;
 }
 
-void findBestMove(char board[26][26], char *ptrBoard, int n, char clr, char *r, char *c) {
+void findBestMove(char board[26][26], int n, char clr, char *r, char *c) {
 	char cpyBoard[26][26];
-	//char antiClr = (clr == 'B')? 'W' : 'B';
-	//char *ptrBoard = &board[0][0];
-	char *ptrCpyBoard = &cpyBoard[0][0];
-	//createCopyBoard(ptrCpyBoard, ptrBoard, n);
 	int score, maxScore = -9999;
 	char moveRow, moveCol;
 	char row, col;
@@ -236,8 +210,8 @@ void findBestMove(char board[26][26], char *ptrBoard, int n, char clr, char *r, 
 			row = i + 'a';
 			col = j + 'a';
 			if (checkMoveAvailable(board, n, row, col, clr)) {
-				createCopyBoard(ptrCpyBoard, ptrBoard, n);
-				score = findTotalScore(cpyBoard, ptrCpyBoard, n, row, col, clr);
+				createCopyBoard(cpyBoard, board, n);
+				score = findTotalScore(cpyBoard, n, row, col, clr);
 				if (score > maxScore) {
 					maxScore = score;
 					moveRow = row;
@@ -274,7 +248,6 @@ int performDummyMove(char board[26][26], int n, char row, char col, char clr) {
 
 void playPlayerTurn(char board[26][26], int n, char clr, bool passed) {
 	char antiClr = getAntiClr(clr);
-	char *ptrBoard = &board[0][0];
 	char moveRow, moveCol;
 	bool movesAvailable = false;
 	
@@ -297,7 +270,7 @@ void playPlayerTurn(char board[26][26], int n, char clr, bool passed) {
 		scanf(" %c%c", &moveRow, &moveCol);
 	
 		if (checkMoveAvailable(board, n, moveRow, moveCol, clr)) {
-			performMove(board, ptrBoard, n, moveRow, moveCol, clr);
+			performMove(board, n, moveRow, moveCol, clr);
 			printBoard(board, n);
 			return playCpuTurn(board, n, antiClr, false);
 		} else {
@@ -313,7 +286,6 @@ void playPlayerTurn(char board[26][26], int n, char clr, bool passed) {
 }
 
 bool checkMoveAvailable(char board[26][26], int n, char row, char col, char clr) {
-	//printf("Checking point %c%c for %c\n", row, col, clr);
 	int i=row-'a';
 	int j=col-'a';
 	if (clr != 'B' && clr != 'W') return false;
@@ -332,8 +304,6 @@ bool checkMoveAvailable(char board[26][26], int n, char row, char col, char clr)
 		}
 		if (available) break;
 	}
-	//if (available) printf("Point %c%c is legal for %c\n", row, col, clr);
-	//else printf("Point %c%c is not legal for %c\n", row, col, clr);
 	return available;
 }
 
@@ -346,6 +316,7 @@ bool positionInBounds(int n, char row, char col){
 }
 
 bool checkLegalInDirection(char board[26][26], int n, char row, char col, char colour, int deltaRow, int deltaCol) {
+	if (!positionInBounds(n, row+deltaRow, col+deltaCol)) return false;
 	row -= 'a';
 	col -= 'a';
 	char antiColour = (colour == 'W')? 'B' : 'W';
@@ -364,18 +335,18 @@ bool checkLegalInDirection(char board[26][26], int n, char row, char col, char c
 	return foundColour;
 }
 
-void performMove(char board[26][26], char *ptrBoard, int n, char row, char col, char clr) {
+void performMove(char board[26][26], int n, char row, char col, char clr) {
 	int i = row - 'a';
 	int j = col - 'a';
 	int k,m;
 	int dR, dC;
-	*(ptrBoard + mC*i + j) = clr;
+	board[i][j] = clr;
 	for (dR=-1; dR<=1; dR++) {
 		for (dC=-1; dC<=1; dC++) {
 			if (!(dR == 0 && dC == 0)) {
 				if (checkLegalInDirection(board, n, row, col, clr, dR, dC)) {
 					for (k=dR, m=dC; true; k+=dR, m+=dC) {
-						if (*(ptrBoard + mC*(i+k) + (j+m)) != clr) *(ptrBoard + mC*(i+k) + (j+m)) = clr;
+						if (board[i+k][j+m] != clr) board[i+k][j+m] = clr;
 						else break;
 					}
 				}
@@ -458,10 +429,8 @@ bool pointInRisk(int n, int row, int col) {
 int mobilityScore(char board[26][26], int n, char row, char col, char clr) {
 	char antiClr = getAntiClr(clr);
 	char copyBoard[26][26];
-	char *ptBoard = &board[0][0];
-	char *ptrCopyBoard = &copyBoard[0][0];
-	createCopyBoard(ptrCopyBoard, ptBoard, n);
-	performMove(copyBoard, ptrCopyBoard, n, row, col, clr);
+	createCopyBoard(copyBoard, board, n);
+	performMove(copyBoard, n, row, col, clr);
 	int i, j;
 	char r, c;
 	int count=0;
