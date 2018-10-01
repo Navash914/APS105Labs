@@ -1,3 +1,13 @@
+/*
+ *
+ * Lab1.c
+ * Takes three numbers as input and calculates mean
+ * and standard deviation.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
