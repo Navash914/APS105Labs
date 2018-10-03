@@ -1,3 +1,15 @@
+/*
+ *
+ * Lab7Part2.c
+ *
+ * AI for Reversi/Othello.
+ * Uses a simplified minimax algorithm to make
+ * intelligent moves.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -164,6 +176,7 @@ int findTotalScore(char board[26][26], int n, char row, char col, char clr) {
 						if (pointInRisk(n, i, j)) {
 							if (!riskCornerTaken(board, n, i, j, clr)) tempScore -= weakBias(n);
 						}
+						// UNCOMMENT BELOW TO INCLUDE PLAYER'S AVAILABLE MOVES INTO CONSIDERATION.
 						//moveScore = mobilityScore(board, n, row, col, clr);
 						//if (moveScore <= 0) tempScore += strongBias(board, n);
 						//else tempScore -= moveScore;
