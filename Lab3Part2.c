@@ -1,3 +1,13 @@
+/*
+ *
+ * Lab3Part2.c
+ *
+ * Command based (a,s,m,d) calculator.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
