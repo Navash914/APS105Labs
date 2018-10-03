@@ -1,3 +1,13 @@
+/*
+ *
+ * Lab4Part1.c
+ *
+ * Draws a triangle of user inputted size.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
