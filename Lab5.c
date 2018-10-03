@@ -1,3 +1,14 @@
+/*
+ *
+ * Lab4Part2.c
+ *
+ * Draws Pascal's triangle upto user inputted number
+ * of rows (max 13).
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
