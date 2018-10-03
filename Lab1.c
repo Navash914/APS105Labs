@@ -1,6 +1,7 @@
 /*
  *
  * Lab1.c
+ *
  * Takes three numbers as input and calculates mean
  * and standard deviation.
  *
