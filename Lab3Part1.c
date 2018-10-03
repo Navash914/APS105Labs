@@ -1,3 +1,14 @@
+/*
+ *
+ * Lab3Part1.c
+ *
+ * Calculate denomination of currency ( < 100 cents ) in
+ * cents, nickels, dimes and quarters.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
