@@ -1,6 +1,6 @@
 /*
  *
- * Lab4Part2.c
+ * Lab5.c
  *
  * Draws Pascal's triangle upto user inputted number
  * of rows (max 13).
