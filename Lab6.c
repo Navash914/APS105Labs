@@ -1,3 +1,15 @@
+/*
+ *
+ * Lab6.c
+ *
+ * Game of Reversi/Othello.
+ * This file is responsible for the logic of the game
+ * and printing the board.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
