@@ -1,12 +1,13 @@
-//
-// APS105 Lab 8 Lab8.c
-//
-// This is a program written to maintain a personal music library, 
-// using a linked list to hold the songs in the library.
-//
-// Author: Naveed Ashfaq
-// Student Number: 1003859559
-//
+/*
+ *
+ * Lab8.c
+ *
+ * Maintains a personal music library, using a 
+ * linked list to hold the songs in the library.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,11 +16,6 @@
 #include <stdbool.h>
 
 const int MAX_LENGTH = 1024;
-// A node in the linked list
-
-// Each string in the node is declared as a character pointer variable,
-// so they need to be dynamically allocated using the malloc() function,
-// and deallocated using the free() function after use.
 
 typedef struct node {
     char *artist ;
@@ -27,11 +23,6 @@ typedef struct node {
     char *genre ;
     struct node *nextNode ;
 } Node;
-
-// Declarations of linked list functions
-//
-// DECLARE YOUR LINKED-LIST FUNCTIONS HERE
-//
 
 Node* insertSong(Node *head, char song[], char artistName[], char genreName[]);
 Node* deleteSong(Node *head, char song[]);
@@ -41,9 +32,6 @@ void printSong(Node *currentNode);
 bool searchSongName(Node *head, char song[]);
 Node* getSongNode(Node *head, char song[]);
 Node* deleteAllEntries(Node *head);
-
-// Declarations of support functions
-// See below the main function for descriptions of what these functions do
 
 void inputStringFromUser( char prompt[], char s[], int arraySize ) ;
 void songNameDuplicate( char songName[] ) ;
@@ -57,13 +45,8 @@ void printMusicLibraryTitle( void ) ;
 
 int main( void ) {
     // Declare the head of the linked list.
-    //   ADD YOUR STATEMENT(S) HERE
 	Node *head = NULL;
-	//head = malloc(sizeof(Node));
-	//head->songName[0] = 0;
-	//head->artist[0] = 0;
-	//head->genre[0] = 0;
-	//head->nextNode = NULL;
+	
     // Announce the start of the program
     printf( "Personal Music Library.\n\n" ) ;
     printf( "%s", "Commands are I (insert), D (delete), S (search by song name),\n"
@@ -84,7 +67,6 @@ int main( void ) {
         if( response == 'I' ) {
             // Insert a song into the linked list.
             // Maintain the list in alphabetical order by song name.
-            //   ADD STATEMENT(S) HERE
 
             // USE THE FOLLOWING STRINGS WHEN PROMPTING FOR DATA:
 			char *promptName = "Song name" ;
@@ -100,7 +82,6 @@ int main( void ) {
         }
         else if( response == 'D' ) {
             // Delete a song from the list.
-			//   ADD STATEMENT(S) HERE
 
             char *prompt = "\nEnter the name of the song to be deleted" ;
 			inputStringFromUser(prompt, input, MAX_LENGTH);
@@ -112,20 +93,17 @@ int main( void ) {
             // Search for a song by its name.
 
             char *prompt = "\nEnter the name of the song to search for" ;
-            //   ADD STATEMENT(S) HERE
-			inputStringFromUser(prompt, input, MAX_LENGTH);
-			if (searchSongName(head, input)) {
-				// Song name is found.
-				songNameFound(input);
-				printSong(getSongNode(head, input));
-			}
-			else songNameNotFound(input); // Song name not found.
+		inputStringFromUser(prompt, input, MAX_LENGTH);
+		if (searchSongName(head, input)) {
+			// Song name is found.
+			songNameFound(input);
+			printSong(getSongNode(head, input));
+		}
+		else songNameNotFound(input); // Song name not found.
         }
         else if( response == 'P' ) {
             // Print the music library.
-
-            //   ADD STATEMENT(S) HERE
-			printMusicLibraryEntries(head);
+		printMusicLibraryEntries(head);
         }
         else if( response == 'Q' ) {
             // do nothing, we'll catch this below
@@ -137,16 +115,12 @@ int main( void ) {
     } while( response != 'Q' ) ;
   
     // Delete the entire linked list.
-    //   ADD STATEMENT(S) HERE
 	head = deleteAllEntries(head);
 
     // Print the linked list to confirm deletion.
-    //   ADD STATEMENT(S) HERE
 	printMusicLibraryEntries(head);
     return 0 ;
 }
-
-// Support Function Definitions
 
 // Prompt the user for a string safely, without buffer overflow
 void inputStringFromUser(char prompt[], char s[], int maxStrLength) {
@@ -194,10 +168,6 @@ void printMusicLibraryEmpty(void) {
 void printMusicLibraryTitle(void) {
     printf( "\nMy Personal Music Library: \n" ) ;
 }
-
-// Add your functions below this line.
-
-//   ADD STATEMENT(S) HERE
 
 // Function for inserting a new song into the library. Song is inserted alphabetically.
 Node* insertSong(Node *head, char song[], char artistName[], char genreName[]) {
@@ -255,16 +225,6 @@ Node* insertSong(Node *head, char song[], char artistName[], char genreName[]) {
 	strcpy(newNode->genre, genreName);
 	
 	return head; // Return unchanged head.
-	
-	/*currentNode->nextNode = (Node*) malloc(sizeof(Node));
-	currentNode->nextNode->songName = (char*) malloc(sizeof(char)*(strlen(song)));
-	currentNode->nextNode->artist = (char*) malloc(sizeof(char)*(strlen(artistName)));
-	currentNode->nextNode->genre = (char*) malloc(sizeof(char)*(strlen(genreName)));
-	currentNode->nextNode->nextNode = (Node*) malloc(sizeof(Node));
-	strcpy(currentNode->nextNode->songName, song);
-	strcpy(currentNode->nextNode->artist, artistName);
-	strcpy(currentNode->nextNode->genre, genreName);
-	currentNode->nextNode->nextNode = NULL;*/
 }
 
 // Function for deleting song from the library given a specified song name:
