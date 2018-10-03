@@ -1,3 +1,13 @@
+/*
+ *
+ * Lab4Part2.c
+ *
+ * Converts numbers between binary and decimal.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
