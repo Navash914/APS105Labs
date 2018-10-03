@@ -1,3 +1,13 @@
+/*
+ *
+ * Lab2.c
+ *
+ * Takes resistor band inputs and calculates resistance.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
