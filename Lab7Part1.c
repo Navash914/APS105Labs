@@ -1,3 +1,15 @@
+/*
+ *
+ * Lab7Part1.c
+ *
+ * AI for Reversi/Othello.
+ * This is the simple AI implementation where the
+ * computer plays the move with the most points.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
