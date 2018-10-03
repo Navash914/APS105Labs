@@ -1,26 +1,18 @@
-//
-// APS105 Lab 9 Lab9.c
-//
-// This is a program written to sort a personal music library
-// using an array.
-//
-// The sorting algorithm is Cocktail Sort.
-//
-// Author: Naveed Ashfaq
-// Student Number: 1003859559
-//
+/*
+ *
+ * Lab9.c
+ *
+ * Sorts a personal music library using an array.
+ *
+ * Author: Naveed Ashfaq
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
-
-// these next two lines should really be:
-//    const int MAX_LIB_SIZE = 100;
-//    const int MAX_LENGTH = 1024;
-// but some (old) compilers seem to have a problem with them,
-// so we will use preprocessor defines
 
 #define MAX_LIB_SIZE 100
 #define MAX_LENGTH 1024
